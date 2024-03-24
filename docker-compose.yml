@@ -4,4 +4,13 @@ services:
   bot:
     build: ./bot
     env_file: ./bot/.env
+  api:
+    build: ./api
+    env_file: ./api/.env
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./api/:/usr/src/app/
+    ports:
+      - 8000:8000
+
 
