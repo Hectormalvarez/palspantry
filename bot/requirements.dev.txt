@@ -1,2 +1,4 @@
 pytestpytest==8.0.0
 pytest-asyncio==0.23.6
+black==24.3.0
+pylint==3.1.0
