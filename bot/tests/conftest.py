@@ -1,9 +1,14 @@
 import pytest
 from unittest.mock import AsyncMock
 
-from src.bot_main import user_states
+from src.states import user_states
 
 chat_id = 12345
+
+
+@pytest.fixture(autouse=True)
+def clear_states():
+    user_states.clear()
 
 
 # Fixture for creating mocked update and context objects
@@ -22,19 +27,17 @@ def mocked_objects():
 # Fixture to clear the user_states dictionary before each test case
 @pytest.fixture(autouse=True)
 def clear_states():
-    from src.bot_main import user_states
+    from src.states import user_states
 
     # Clear the user_states dictionary
     user_states.clear()
 
 
 # Helper function to assert the user state and the message sent by the bot
-def assert_state_and_message(
-    mocked_context, expected_state, expected_message
-):    
+def assert_state_and_message(mocked_context, expected_state, expected_message):
     # Assert that the user state matches the expected state
     assert user_states[chat_id] == expected_state
-    
+
     # Assert that the send_message method was called with the expected chat ID and message
     mocked_context.bot.send_message.assert_awaited_once_with(
         chat_id=chat_id, text=expected_message
