@@ -12,5 +12,11 @@ services:
       - ./api/:/usr/src/app/
     ports:
       - 8000:8000
+  db:
+    build: ./db
+    env_file: ./db/.env
+    volumes:
+      - db_data:/var/lib/postgresql/data/
 
-
+volumes:
+  db_data:
