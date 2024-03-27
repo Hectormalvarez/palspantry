@@ -18,6 +18,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from .views import ping
+
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("v1/ping/", ping, name="ping")
 ]
