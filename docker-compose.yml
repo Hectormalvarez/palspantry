@@ -1,9 +1,9 @@
-version: '3.8'
-
 services:
   bot:
     build: ./bot
     env_file: ./bot/.env
+    volumes:
+      - ./bot/:/usr/src/app
   api:
     build: ./api
     env_file: ./api/.env
