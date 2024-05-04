@@ -8,6 +8,7 @@ from telegram.ext import (
 from commands.login import login
 from commands.logout import logout
 from commands.start import start
+from commands.register import register_handler
 from utils import BOT_TOKEN
 
 
@@ -23,5 +24,6 @@ def create_application():
     application.add_handler(start_handler)
     application.add_handler(login_handler)
     application.add_handler(logout_handler)
+    application.add_handler(register_handler)
 
     return application
