@@ -1,7 +1,8 @@
 .env
-venv/
+.venv/
 *.pyc
 .pytest_cache
 __pycache__
 .dockerignore
 *.sqlite3
+update*.json
