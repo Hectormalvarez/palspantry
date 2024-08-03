@@ -102,12 +102,6 @@ async def login_password(update: Update, context: ContextTypes.DEFAULT_TYPE):
             message_id=context.user_data["login_message_id"],
             text="Login successful!",
         )
-        context.job_queue.run_once(
-            delete_message,
-            3,
-            data=context.user_data["login_message_id"],
-            chat_id=update.effective_chat.id,
-        )
     else:
         logger.warning(
             "Failed login attempt for user %s (ID: %s).",
@@ -119,6 +113,13 @@ async def login_password(update: Update, context: ContextTypes.DEFAULT_TYPE):
             message_id=context.user_data["login_message_id"],
             text="Invalid credentials. Please try again.",
         )
+    # delete /login conversation message
+    context.job_queue.run_once(
+        delete_message,
+        3,
+        data=context.user_data["login_message_id"],
+        chat_id=update.effective_chat.id,
+    )
 
     return ConversationHandler.END
 
