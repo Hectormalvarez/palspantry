@@ -1,4 +1,5 @@
 """Palspantry /login command"""
+
 import logging
 
 from telegram import Update
@@ -94,7 +95,7 @@ async def login_password(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.info(
             "User %s (ID: %s) logged in successfully.",
             username,
-            update.effective_user.id
+            update.effective_user.id,
         )
         await context.bot.edit_message_text(
             chat_id=update.effective_chat.id,
@@ -111,7 +112,7 @@ async def login_password(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.warning(
             "Failed login attempt for user %s (ID: %s).",
             username,
-            update.effective_user.id
+            update.effective_user.id,
         )
         await context.bot.edit_message_text(
             chat_id=update.effective_chat.id,
@@ -135,7 +136,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     logger.warning(
         "Canceled login attempt for user %s (ID: %s).",
         username,
-        update.effective_user.id
+        update.effective_user.id,
     )
     await update.message.reply_text("Login canceled.")
 

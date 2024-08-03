@@ -5,11 +5,11 @@ from telegram.ext import (
     CommandHandler,
 )
 
-from commands.logout import logout
-from commands.start import start
-from commands.login import login_handler
-from commands.register import register_handler
-from utils import BOT_TOKEN
+from src.commands.logout import logout
+from src.commands.start import start
+from src.commands.login import login_handler
+from src.commands.register import register_handler
+from src.utils import BOT_TOKEN
 
 
 def create_application():

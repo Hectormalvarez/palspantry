@@ -1,6 +1,6 @@
 """Main module for the Pals Pantry bot."""
 
-from handlers import create_application
+from src.handlers import create_application
 
 
 if __name__ == "__main__":
