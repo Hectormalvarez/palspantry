@@ -22,7 +22,7 @@ async def login(update: Update, context: ContextTypes.DEFAULT_TYPE):
     Starts the login process by asking for the user's username.
     """
     logger.info(
-        "User %s (ID: %d) initiated login process.",
+        "Login: Started: User %s (ID %d)",
         update.effective_user.username,
         update.effective_user.id,
     )
@@ -55,7 +55,7 @@ async def login_username(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.effective_message.delete()
 
     logger.info(
-        "User %s (ID: %d) entered username: %s",
+        "Login: In Progress: User %s (ID %d): entered username: %s",
         update.effective_user.username,
         update.effective_user.id,
         username,
@@ -77,13 +77,22 @@ async def login_password(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # delete password message
     await update.effective_message.delete()
+    logger.info(
+        "Login: In Progress: User %s (ID %d): entered password",
+        update.effective_user.username,
+        update.effective_user.id,
+    )
 
     await context.bot.edit_message_text(
         chat_id=update.effective_chat.id,
         message_id=context.user_data["login_message_id"],
         text="attempting login...",
     )
-
+    logger.info(
+        "Login: In Progress: User %s (ID %d): calling /token api",
+        update.effective_user.username,
+        update.effective_user.id,
+    )
     response = call_api(
         "/api/token/", data={"username": username, "password": password}
     )
@@ -92,8 +101,9 @@ async def login_password(update: Update, context: ContextTypes.DEFAULT_TYPE):
         data = response.json()
         context.user_data["access_token"] = data["access"]
         context.user_data["refresh_token"] = data["refresh"]
+
         logger.info(
-            "User %s (ID: %s) logged in successfully.",
+            "Login: Success: User %s (ID %s)",
             username,
             update.effective_user.id,
         )
@@ -104,7 +114,7 @@ async def login_password(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
     else:
         logger.warning(
-            "Failed login attempt for user %s (ID: %s).",
+            "Login: Failed: User %s (ID %s)",
             username,
             update.effective_user.id,
         )
@@ -113,6 +123,7 @@ async def login_password(update: Update, context: ContextTypes.DEFAULT_TYPE):
             message_id=context.user_data["login_message_id"],
             text="Invalid credentials. Please try again.",
         )
+
     # delete /login conversation message
     context.job_queue.run_once(
         delete_message,
@@ -135,7 +146,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         user_data.clear()
 
     logger.warning(
-        "Canceled login attempt for user %s (ID: %s).",
+        "Login: Canceled: User %s (ID %s)",
         username,
         update.effective_user.id,
     )
