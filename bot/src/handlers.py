@@ -5,9 +5,9 @@ from telegram.ext import (
     CommandHandler,
 )
 
-from commands.login import login
 from commands.logout import logout
 from commands.start import start
+from commands.login import login_handler
 from commands.register import register_handler
 from utils import BOT_TOKEN
 
@@ -18,7 +18,6 @@ def create_application():
     application = ApplicationBuilder().token(BOT_TOKEN).build()
 
     start_handler = CommandHandler("start", start)
-    login_handler = CommandHandler("login", login)
     logout_handler = CommandHandler("logout", logout)
 
     application.add_handler(start_handler)
