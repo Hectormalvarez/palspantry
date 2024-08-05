@@ -11,7 +11,7 @@ from telegram.ext import (
     filters,
 )
 
-from src.utils import call_api
+from src.utils import call_api, check_token
 
 LOGIN_USERNAME, LOGIN_PASSWORD = range(2)
 logger = logging.getLogger(__name__)
@@ -31,6 +31,27 @@ async def login(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.delete_message(
         chat_id=update.effective_chat.id, message_id=update.message.message_id
     )
+
+    token_valid = check_token(context=context, update=update)
+    if token_valid:
+        logger.info(
+            "Login: Cancelled: Logged In: User %s (ID %d)",
+            update.effective_user.username,
+            update.effective_user.id,
+        )
+        welcome_message = await update.message.reply_text(
+            """
+        Welcome to the PalsPantry!
+        You are already logged in!
+        """
+        )
+        context.job_queue.run_once(
+            delete_message,
+            3,
+            data=welcome_message.id,
+            chat_id=update.effective_chat.id,
+        )
+        return ConversationHandler.END
 
     welcome_message = await update.message.reply_text(
         """
@@ -55,10 +76,10 @@ async def login_username(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.effective_message.delete()
 
     logger.info(
-        "Login: In Progress: User %s (ID %d): entered username: %s",
+        "Login: In Progress: entered username: %s: User %s (ID %d)",
+        username,
         update.effective_user.username,
         update.effective_user.id,
-        username,
     )
 
     await context.bot.edit_message_text(
