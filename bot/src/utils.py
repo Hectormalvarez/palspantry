@@ -26,12 +26,6 @@ def get_api_url():
     return API_URL
 
 
-def call_api(endpoint, data=None, headers=None):
-    """Makes a POST request to the specified API endpoint."""
-    url = f"{get_api_url()}{endpoint}"
-    return requests.post(url, data=data, headers=headers, timeout=5)
-
-
 async def delete_message(context: ContextTypes.DEFAULT_TYPE):
     """Job to delete a message after a delay."""
     message = context.job.data
@@ -67,7 +61,9 @@ def check_token(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 update.effective_user.username,
                 update.effective_user.id,
             )
-            response = call_api("/api/token/verify/", data={"token": access_token})
+            response = requests_lib.post(
+                f"{get_api_url()}/api/token/verify/", data={"token": access_token}
+            ) 
             if response.status_code == 200:
                 logging.info(
                     "check_token: Success: User %s (ID %d) access token valid",
@@ -86,8 +82,10 @@ def check_token(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     "check_token: in progress: User %s (ID %d) calling refresh api endpoint",
                     update.effective_user.username,
                     update.effective_user.id,
+                refresh_response = requests_lib.post(
+                    f"{get_api_url()}/api/token/refresh/", data={"refresh": refresh_token}
                 )
-                refresh_response = call_api("/api/token/refresh/", data=data)
+
                 if refresh_response.status_code == 200:
                     logging.info(
                         "check_token: sucess: User %s (ID %d) refresh token valid",

@@ -11,7 +11,7 @@ from telegram.ext import (
     filters,
 )
 
-from src.utils import call_api, check_token
+from src.utils import get_api_url, check_token, delete_message
 
 LOGIN_USERNAME, LOGIN_PASSWORD = range(2)
 logger = logging.getLogger(__name__)
@@ -114,8 +114,8 @@ async def login_password(update: Update, context: ContextTypes.DEFAULT_TYPE):
         update.effective_user.username,
         update.effective_user.id,
     )
-    response = call_api(
-        "/api/token/", data={"username": username, "password": password}
+    response = requests.post(
+        f"{get_api_url()}/api/token/", data={"username": username, "password": password}
     )
 
     if response.status_code == 200:
