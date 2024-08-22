@@ -1,41 +1,42 @@
 import pytest
-from tests.conftest import assert_state_and_message, user_states, chat_id
-from src.commands.start import start
+from unittest.mock import MagicMock, AsyncMock
+
+from src.commands.start import start, START_MESSAGE_LOGGED_IN, START_MESSAGE_LOGGED_OUT
 
 
 @pytest.mark.asyncio
-async def test_start_new_user(mocked_objects):
-    """Tests the behavior for a new, unauthenticated user"""
-    mocked_update, mocked_context = mocked_objects
-
-    await start(mocked_update, mocked_context)
-
-    expected_message = (
-        "Welcome to Pals Pantry! To use the store, please log in. Type /login to begin."
+async def test_start_logged_in(mock_context, mock_update, mocker):
+    # Mock the requests library's post method and set up mock responses
+    mocker.patch(
+        "src.utils.requests.post",
+        side_effect=[
+            MagicMock(status_code=200),  # Successful token verification
+        ],
     )
-    assert_state_and_message(
-        mocked_context,
-        expected_state="UNAUTHENTICATED",
-        expected_message=expected_message,
+
+    # Set up user_data to simulate a logged-in user
+    mock_context.user_data["access_token"] = "some_access_token"
+    mock_context.user_data["refresh_token"] = "some_refresh_token"
+
+    await start(mock_update, mock_context)
+
+    # Assert welcome message and log message
+    mock_context.bot.send_message.assert_called_once_with(
+        chat_id=12345,
+        text=START_MESSAGE_LOGGED_IN,
     )
+    mock_context.job_queue.run_once.assert_called_once()
 
 
 @pytest.mark.asyncio
-async def test_start_returning_user(mocked_objects):
-    """Tests the behavior for a returning, authenticated user."""
-    user_states[chat_id] = "AUTHENTICATED"
-    mocked_update, mocked_context = mocked_objects
+async def test_start_logged_out(mock_context, mock_update, mocker):
+    # Mock the requests library's post method (so it does not call the api)
+    mocker.patch("src.utils.requests.post")
 
-    await start(mocked_update, mocked_context)
+    await start(mock_update, mock_context)
 
-    expected_message = (
-        "Welcome back! Here's what you can do:\n"
-        "* /browse: View available products\n"
-        "* /order: Place an order\n"
-        "* /help: Get more information"
+    # Assert login prompt and log message
+    mock_context.bot.send_message.assert_called_once_with(
+        chat_id=12345, text=START_MESSAGE_LOGGED_OUT
     )
-    assert_state_and_message(
-        mocked_context,
-        expected_state="AUTHENTICATED",
-        expected_message=expected_message,
-    )
+    mock_context.job_queue.run_once.assert_called_once()
