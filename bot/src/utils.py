@@ -13,7 +13,7 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
 )
 
-logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("httpx").setLevel(logging.WARNING) 
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 API_URL = os.getenv("PALSPANTRY_API_URL")
@@ -34,12 +34,13 @@ async def delete_message(context: ContextTypes.DEFAULT_TYPE):
     await context.bot.delete_message(chat_id=chat_id, message_id=message)
 
 
-def check_token(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def check_token(update: Update, context: ContextTypes.DEFAULT_TYPE, requests_lib=requests):
     """
     Checks the validity of a user's access token and handles potential refresh.
 
     Args:
         context: The Telegram CallbackContext object.
+        requests_lib: The requests library to use for making API requests.
 
     Returns:
         bool: True if the token is valid or was successfully refreshed, False otherwise.
@@ -48,61 +49,29 @@ def check_token(update: Update, context: ContextTypes.DEFAULT_TYPE):
     access_token = user_data.get("access_token")
     refresh_token = user_data.get("refresh_token")
 
-    logging.info(
-        "check_token: Started: User %s (ID %d)",
-        update.effective_user.username,
-        update.effective_user.id,
-    )
-
     if access_token:
         try:
-            logging.info(
-                "check_token: in progress: User %s (ID %d) calling verify api endpoint",
-                update.effective_user.username,
-                update.effective_user.id,
-            )
             response = requests_lib.post(
                 f"{get_api_url()}/api/token/verify/", data={"token": access_token}
             ) 
             if response.status_code == 200:
-                logging.info(
-                    "check_token: Success: User %s (ID %d) access token valid",
-                    update.effective_user.username,
-                    update.effective_user.id,
-                )
-                return True  # Token is valid
+                # Token is valid
+                return True
         except InvalidToken:
-            pass  # Access Token is invalid
-
+            # Access Token is invalid
+            pass
         # Try refreshing the token if it's invalid
         if refresh_token:
-            data = {"refresh": refresh_token}
             try:
-                logging.info(
-                    "check_token: in progress: User %s (ID %d) calling refresh api endpoint",
-                    update.effective_user.username,
-                    update.effective_user.id,
                 refresh_response = requests_lib.post(
                     f"{get_api_url()}/api/token/refresh/", data={"refresh": refresh_token}
                 )
 
                 if refresh_response.status_code == 200:
-                    logging.info(
-                        "check_token: sucess: User %s (ID %d) refresh token valid",
-                        update.effective_user.username,
-                        update.effective_user.id,
-                    )
                     new_tokens = refresh_response.json()
                     user_data["access_token"] = new_tokens["access"]
                     return True  # Refresh successful
             except TokenError:
                 return False  # Refresh Failed
-
-        logging.info(
-            "check_token: failed: User %s (ID %d) unable to verify tokens",
-            update.effective_user.username,
-            update.effective_user.id,
-        )
-
     # If the access token is invalid and refreshing failed, return False
     return False
