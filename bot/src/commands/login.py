@@ -10,11 +10,23 @@ from telegram.ext import (
     MessageHandler,
     filters,
 )
+import requests
 
 from src.utils import get_api_url, check_token, delete_message
 
 LOGIN_USERNAME, LOGIN_PASSWORD = range(2)
 logger = logging.getLogger(__name__)
+login_already_logged_in_response = """
+Welcome to the PalsPantry!
+You are already logged in!
+"""
+login_initiated_response = """
+Welcome to the login process!
+Please enter your username:
+"""
+login_username_response = """
+Please enter your password:
+"""
 
 
 async def login(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -32,19 +44,16 @@ async def login(update: Update, context: ContextTypes.DEFAULT_TYPE):
         chat_id=update.effective_chat.id, message_id=update.message.message_id
     )
 
-    token_valid = check_token(context=context, update=update)
-    if token_valid:
+    has_tokens = context.user_data.get("access_token") or context.user_data.get(
+        "refresh_token"
+    )
+    if has_tokens and check_token(context=context, update=update):
         logger.info(
             "Login: Cancelled: Logged In: User %s (ID %d)",
             update.effective_user.username,
             update.effective_user.id,
         )
-        welcome_message = await update.message.reply_text(
-            """
-        Welcome to the PalsPantry!
-        You are already logged in!
-        """
-        )
+        welcome_message = await update.message.reply_text(login_already_logged_in_response)
         context.job_queue.run_once(
             delete_message,
             3,
@@ -53,12 +62,7 @@ async def login(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return ConversationHandler.END
 
-    welcome_message = await update.message.reply_text(
-        """
-        Welcome to the login process!
-        Please enter your username:
-        """
-    )
+    welcome_message = await update.message.reply_text(login_initiated_response)
     # save welcome message id for text updates on same bubble
     context.user_data["login_message_id"] = welcome_message.message_id
 
@@ -74,18 +78,16 @@ async def login_username(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # delete username
     await update.effective_message.delete()
-
     logger.info(
         "Login: In Progress: entered username: %s: User %s (ID %d)",
         username,
         update.effective_user.username,
         update.effective_user.id,
     )
-
     await context.bot.edit_message_text(
         chat_id=update.effective_chat.id,
         message_id=context.user_data["login_message_id"],
-        text="Please enter your password:",
+        text=login_username_response,
     )
 
     return LOGIN_PASSWORD
@@ -174,14 +176,6 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await update.message.reply_text("Login canceled.")
 
     return ConversationHandler.END
-
-
-async def delete_message(context: ContextTypes.DEFAULT_TYPE):
-    """Job to delete a message after a delay."""
-    message = context.job.data
-    chat_id = context.job.chat_id
-
-    await context.bot.delete_message(chat_id=chat_id, message_id=message)
 
 
 login_handler = ConversationHandler(
