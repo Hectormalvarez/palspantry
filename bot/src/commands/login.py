@@ -27,6 +27,15 @@ Please enter your username:
 login_username_response = """
 Please enter your password:
 """
+login_password_initiated_response = """
+attempting login...
+"""
+login_password_success_response = """
+Login successful!
+"""
+login_password_failure_response = """
+Invalid credentials. Please try again.
+"""
 
 
 async def login(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -109,7 +118,7 @@ async def login_password(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.edit_message_text(
         chat_id=update.effective_chat.id,
         message_id=context.user_data["login_message_id"],
-        text="attempting login...",
+        text=login_password_initiated_response,
     )
     logger.info(
         "Login: In Progress: User %s (ID %d): calling /token api",
@@ -133,7 +142,7 @@ async def login_password(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.edit_message_text(
             chat_id=update.effective_chat.id,
             message_id=context.user_data["login_message_id"],
-            text="Login successful!",
+            text=login_password_success_response,
         )
     else:
         logger.warning(
@@ -144,7 +153,7 @@ async def login_password(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.edit_message_text(
             chat_id=update.effective_chat.id,
             message_id=context.user_data["login_message_id"],
-            text="Invalid credentials. Please try again.",
+            text=login_password_failure_response,
         )
 
     # delete /login conversation message
