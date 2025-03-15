@@ -49,3 +49,7 @@ This bot will allow sellers to list items and users to view them. Currently unde
 ## Next Step
 
 Implement the initial `/additem` functionality (shop name prompt).
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
