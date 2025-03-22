@@ -19,16 +19,21 @@ def main():
     # Get the bot token from the environment variable
     TOKEN = os.environ.get("BOT_TOKEN")
     if not TOKEN:
+        logging.error("BOT_TOKEN environment variable not set!")
         raise ValueError("BOT_TOKEN environment variable not set!")
 
-    # Create the application
-    application = ApplicationBuilder().token(TOKEN).build()
+    try:
+        # Create the application
+        application = ApplicationBuilder().token(TOKEN).build()
 
-    # Register command handlers
-    application.add_handler(CommandHandler("help", help_command))
+        # Register command handlers
+        application.add_handler(CommandHandler("help", help_command))
 
-    # Start the bot
-    application.run_polling()
+        # Start the bot
+        application.run_polling()
+    except Exception as e:
+        logging.critical(f"Bot failed to start: {e}")
+        raise
 
 if __name__ == "__main__":
     main()
