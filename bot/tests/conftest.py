@@ -1,30 +1,25 @@
-from unittest.mock import AsyncMock, MagicMock
-
+# bot/tests/conftest.py
 import pytest
+from unittest.mock import AsyncMock
 from telegram import Update
-from telegram.ext import ContextTypes
-
-
-@pytest.fixture
-def mock_context():
-    context = AsyncMock(spec=ContextTypes.DEFAULT_TYPE)
-    context.bot = AsyncMock()
-    context.bot.send_message = AsyncMock()
-    context.bot.edit_message_text = AsyncMock()
-    context.bot.delete_message = AsyncMock()
-    context.job_queue.run_once = MagicMock()
-
-    return context
-
+from telegram.ext import CallbackContext
 
 @pytest.fixture
-def mock_update():
+def mock_update_context():
+    """Provides a mock Update and Context for testing."""
     update = AsyncMock(spec=Update)
-    update.effective_chat.id = 12345
-    update.effective_user.id = 98765
-    update.effective_user.username = "testuser"
-    update.effective_message.delete = AsyncMock()
-    update.message.message_id = 67890
-    update.message.reply_text = AsyncMock()
+    context = AsyncMock(spec=CallbackContext)
+    context.bot.send_message = AsyncMock()
+    update.effective_user.id = 123  # Default user ID
+    update.effective_chat.id = 456  # Default chat ID
+    return update, context
 
-    return update
+# --- Helper function---
+def setup_mock_update_context(update, context, user_data=None, text=None):
+    """Sets up the mock update and context objects."""
+    if user_data:
+        context.user_data = user_data
+    else:
+        context.user_data = {}
+
+    update.message.text = text
