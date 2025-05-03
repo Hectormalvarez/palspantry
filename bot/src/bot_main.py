@@ -3,7 +3,7 @@ import os
 from telegram.ext import ApplicationBuilder, CommandHandler
 from dotenv import load_dotenv
 
-from src.commands.help import help_command
+from commands.help import help_command
 
 # Load environment variables from .env file
 load_dotenv()
